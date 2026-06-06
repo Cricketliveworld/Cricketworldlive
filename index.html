@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CricStream - Live Cricket & Highlights</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: #0f0f0f;
+            color: #ffffff;
+        }
+
+        /* Header */
+        header {
+            background-color: #1a1a1a;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid #e63946;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+
+        .logo span {
+            color: #e63946;
+        }
+
+        nav {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .nav-btn {
+            background: transparent;
+            border: 1px solid #444;
+            color: #ccc;
+            padding: 0.5rem 1.5rem;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 1rem;
+        }
+
+        .nav-btn:hover, .nav-btn.active {
+            background-color: #e63946;
+            color: white;
+            border-color: #e63946;
+        }
+
+        /* Main Layout */
+        main {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+
+        .section {
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .section.active-section {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Live Section Styles */
+        .live-banner {
+            background-color: #e63946;
+            color: white;
+            text-align: center;
+            padding: 0.75rem;
+            font-weight: bold;
+            border-radius: 8px 8px 0 0;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .video-container {
+            position: relative;
+            width: 100%;
+            background: #000;
+            border-radius: 0 0 8px 8px;
+            overflow: hidden;
+            aspect-ratio: 16/9;
+        }
+
+        video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .live-indicator {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background-color: #e63946;
+            color: white;
+            padding: 5px 15px;
+            border-radius: 4px;
+            font-weight: bold;
+            font-size: 0.9rem;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.6; }
+            100% { opacity: 1; }
+        }
+
+        .match-info {
+            margin-top: 1.5rem;
+            padding: 1.5rem;
+            background-color: #1a1a1a;
+            border-radius: 8px;
+        }
+
+        .match-info h2 {
+            color: #e63946;
+            margin-bottom: 0.5rem;
+        }
+
+        .score {
+            margin-top: 1rem;
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #4ade80;
+        }
+
+        /* Highlights Section Styles */
+        .highlights-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-top: 1.5rem;
+        }
+
+        .highlight-card {
+            background-color: #1a1a1a;
+            border-radius: 8px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            position: relative;
+        }
+
+        .highlight-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(230, 57, 70, 0.2);
+        }
+
+        .highlight-card img {
+            width: 100%;
+            height: 180px;
+            object-fit: cover;
+            display: block;
+        }
+
+        .play-overlay {
+            position: absolute;
+            top: 90px;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 3rem;
+            color: rgba(255,255,255,0.9);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            pointer-events: none;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.5);
+        }
+
+        .highlight-card:hover .play-overlay {
+            opacity: 1;
+        }
+
+        .highlight-info {
+            padding: 1rem;
+        }
+
+        .highlight-info h3 {
+            font-size: 1.1rem;
+            margin-bottom: 0.5rem;
+            color: #fff;
+        }
+
+        .highlight-info p {
+            font-size: 0.9rem;
+            color: #aaa;
+        }
+
+        /* Footer */
+        footer {
+            text-align: center;
+            padding: 2rem;
+            margin-top: 3rem;
+            border-top: 1px solid #333;
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            header {
+                flex-direction: column;
+                gap: 1rem;
+            }
+            .highlights-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <div class="logo">🏏 Cric<span>Stream</span></div>
+        <nav>
+            <button class="nav-btn active" data-target="live-section">Live Match</button>
+            <button class="nav-btn" data-target="highlights-section">Highlights</button>
+        </nav>
+    </header>
+
+    <!-- Main Content -->
+    <main>
+        <!-- Live Section -->
+        <section id="live-section" class="section active-section">
+            <div class="live-banner">🔴 LIVE NOW: India vs Australia - 3rd ODI</div>
+            <div class="video-container">
+                <video id="main-player" controls poster="https://images.unsplash.com/photo-1531415074968-036ba1b575da?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80">
+                    <source src="https://www.w3schools.com/html/mov_bbb.mp4" type="video/mp4">
+                    Your browser does not support the video tag.
+                </video>
+                <div class="live-indicator">LIVE</div>
+            </div>
+            <div class="match-info">
+                <h2>India vs Australia</h2>
+                <p>3rd ODI • Melbourne Cricket Ground</p>
+                <div class="score">IND: 245/4 (42.3 Overs) | AUS: Yet to bat</div>
+            </div>
+        </section>
+
+        <!-- Highlights Section -->
+        <section id="highlights-section" class="section">
+            <h2>Recent Highlights</h2>
+            <div class="highlights-grid">
+                <!-- Highlight Card 1 -->
+                <div class="highlight-card" onclick="playHighlight('https://www.w3schools.com/html/mov_bbb.mp4', 'Six by Kohli! Massive hit over long-on.', 'India vs Australia')">
+                    <img src="https://images.unsplash.com/photo-1540747913346-19e32dc3e97e?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80" alt="Cricket Highlight">
+                    <div class="play-overlay">▶</div>
+                    <div class="highlight-info">
+                        <h3>Six by Kohli! Massive hit</h3>
+                        <p>IND vs AUS • 2.3M views • 2h ago</p>
+                    </div>
+                </div>
+                
+                <!-- Highlight Card 2 -->
+                <div class="highlight-card" onclick="playHighlight('https://www.w3schools.com/html/movie.mp4', 'Incredible catch by Smith at the boundary!', 'India vs Australia')">
+                    <img src="https://images.unsplash.com/photo-1624526267942-ab0ff8a3e972?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80" alt="Cricket Highlight">
+                    <div class="play-overlay">▶</div>
+                    <div class="highlight-info">
+                        <h3>Incredible boundary catch</h3>
+                        <p>IND vs AUS • 1.1M views • 4h ago</p>
+                    </div>
+                </div>
+
+                <!-- Highlight Card 3 -->
+                <div class="highlight-card" onclick="playHighlight('https://www.w3schools.com/html/mov_bbb.mp4', 'Hat-trick by Bumrah! Unplayable delivery.', 'India vs England')">
+                    <img src="https://images.unsplash.com/photo-1531415074968-036ba1b575da?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80" alt="Cricket Highlight">
+                    <div class="play-overlay">▶</div>
+                    <div class="highlight-info">
+                        <h3>Hat-trick by Bumrah!</h3>
+                        <p>IND vs ENG • 5.4M views • 1d ago</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <p>&copy; 2023 CricStream Demo. This is a frontend template. No actual copyrighted live streams are hosted here.</p>
+    </footer>
+
+    <!-- JavaScript -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const navButtons = document.querySelectorAll('.nav-btn');
+            const sections = document.querySelectorAll('.section');
+            const mainPlayer = document.getElementById('main-player');
+            const liveBanner = document.querySelector('.live-banner');
+            const liveIndicator = document.querySelector('.live-indicator');
+            const matchTitle = document.querySelector('.match-info h2');
+            const matchDetails = document.querySelector('.match-info p');
+            const matchScore = document.querySelector('.score');
+
+            const defaultLiveState = {
+                banner: "🔴 LIVE NOW: India vs Australia - 3rd ODI",
+                bannerColor: "#e63946",
+                title: "India vs Australia",
+                details: "3rd ODI • Melbourne Cricket Ground",
+                score: "IND: 245/4 (42.3 Overs) | AUS: Yet to bat",
+                videoSrc: "https://www.w3schools.com/html/mov_bbb.mp4",
+                showIndicator: true
+            };
+
+            navButtons.forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    navButtons.forEach(b => b.classList.remove('active'));
+                    e.target.classList.add('active');
+
+                    const targetId = e.target.getAttribute('data-target');
+                    sections.forEach(sec => sec.classList.remove('active-section'));
+                    document.getElementById(targetId).classList.add('active-section');
+
+                    if (targetId === 'live-section') {
+                        resetToLive();
+                    }
+                });
+            });
+
+            function resetToLive() {
+                liveBanner.textContent = defaultLiveState.banner;
+                liveBanner.style.backgroundColor = defaultLiveState.bannerColor;
+                liveIndicator.style.display = defaultLiveState.showIndicator ? 'block' : 'none';
+                matchTitle.textContent = defaultLiveState.title;
+                matchDetails.textContent = defaultLiveState.details;
+                matchScore.textContent = defaultLiveState.score;
+                mainPlayer.src = defaultLiveState.videoSrc;
+                mainPlayer.pause();
+            }
+
+            window.playHighlight = function(videoUrl, title, match) {
+                navButtons.forEach(b => b.classList.remove('active'));
+                document.querySelector('[data-target="live-section"]').classList.add('active');
+                
+                sections.forEach(sec => sec.classList.remove('active-section'));
+                document.getElementById('live-section').classList.add('active-section');
+
+                mainPlayer.src = videoUrl;
+                liveBanner.textContent = "▶ NOW PLAYING: HIGHLIGHT";
+                liveBanner.style.backgroundColor = "#2a9d8f";
+                liveIndicator.style.display = 'none';
+                matchTitle.textContent = match;
+                matchDetails.textContent = "Match Highlight Reel";
+                matchScore.textContent = title;
+
+                mainPlayer.play().catch(e => console.log("Autoplay prevented:", e));
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            };
+        });
+    </script>
+</body>
+</html>
